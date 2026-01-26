@@ -74,13 +74,13 @@ export const Sidebar = forwardRef<HTMLDivElement, SidebarProps>(
         {renderActions(sqlActions, onAction, false)}
       </SidebarSection>
 
-      <SidebarSection title="Array">
-        {renderActions(arrayActions, onAction, !isArray)}
-      </SidebarSection>
+    <SidebarSection title="JSON">
+      {renderActions(jsonActions, onAction, !isJson)}
+    </SidebarSection>
 
-      <SidebarSection title="JSON">
-        {renderActions(jsonActions, onAction, !isJson)}
-      </SidebarSection>
+    <SidebarSection title="Array">
+      {renderActions(arrayActions, onAction, !isArray)}
+    </SidebarSection>
 
       <SidebarResizeHandle />
     </aside>

@@ -23,7 +23,7 @@ export const buildJsonActions = (): Action[] => [
   },
   {
     id: 'pretty-json',
-    label: 'Pretty-print JSON',
+    label: 'Prettify JSON',
     execute: ({ input }) => {
       const parsed = parseJsonValue(input)
       if (!parsed.ok) return err(parsed.error)
