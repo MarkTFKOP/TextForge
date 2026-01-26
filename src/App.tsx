@@ -1,5 +1,9 @@
 import { useMemo, useState } from 'react'
 import './App.css'
+import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
+import { Toaster } from '@/components/ui/sonner'
+import { toast } from 'sonner'
 
 type Action = {
   id: string
@@ -74,13 +78,34 @@ function App() {
     'What i want to build is a simple util function',
   )
   const [outputValue, setOutputValue] = useState('')
-  const [notice, setNotice] = useState('Ready.')
+  const [inputTone, setInputTone] = useState<'success' | 'error' | null>(null)
   const [inputCopyStatus, setInputCopyStatus] = useState('Copy')
   const [outputCopyStatus, setOutputCopyStatus] = useState('Copy')
 
-  const setNoticeWithTimeout = (message: string) => {
-    setNotice(message)
-    window.setTimeout(() => setNotice('Ready.'), 3000)
+  const isJsonInput = useMemo(() => {
+    const trimmed = inputValue.trim()
+    if (!trimmed) return false
+    try {
+      JSON.parse(trimmed)
+      return true
+    } catch (error) {
+      return false
+    }
+  }, [inputValue])
+
+  const notify = (
+    message: string,
+    tone: 'info' | 'success' | 'error' = 'info',
+  ) => {
+    if (tone === 'success') {
+      toast.success(message)
+      return
+    }
+    if (tone === 'error') {
+      toast.error(message)
+      return
+    }
+    toast(message)
   }
 
   const handleCopy = async (
@@ -92,8 +117,13 @@ function App() {
       setLabel('Copied')
       window.setTimeout(() => setLabel('Copy'), 1500)
     } catch (error) {
-      setNoticeWithTimeout('Copy failed. Please try again.')
+      notify('Copy failed. Please try again.', 'error')
     }
+  }
+
+  const setInputToneWithTimeout = (tone: 'success' | 'error') => {
+    setInputTone(tone)
+    window.setTimeout(() => setInputTone(null), 2000)
   }
 
   const stringActions: Action[] = useMemo(
@@ -101,37 +131,58 @@ function App() {
       {
         id: 'upper',
         label: 'UPPERCASE',
-        run: () => setOutputValue(inputValue.toUpperCase()),
+        run: () => {
+          setOutputValue(inputValue.toUpperCase())
+          setInputToneWithTimeout('success')
+        },
       },
       {
         id: 'lower',
         label: 'lowercase',
-        run: () => setOutputValue(inputValue.toLowerCase()),
+        run: () => {
+          setOutputValue(inputValue.toLowerCase())
+          setInputToneWithTimeout('success')
+        },
       },
       {
         id: 'title',
         label: 'Title Case',
-        run: () => setOutputValue(toTitleCase(inputValue)),
+        run: () => {
+          setOutputValue(toTitleCase(inputValue))
+          setInputToneWithTimeout('success')
+        },
       },
       {
         id: 'camel',
         label: 'camelCase',
-        run: () => setOutputValue(toCamelCase(inputValue)),
+        run: () => {
+          setOutputValue(toCamelCase(inputValue))
+          setInputToneWithTimeout('success')
+        },
       },
       {
         id: 'pascal',
         label: 'PascalCase',
-        run: () => setOutputValue(toPascalCase(inputValue)),
+        run: () => {
+          setOutputValue(toPascalCase(inputValue))
+          setInputToneWithTimeout('success')
+        },
       },
       {
         id: 'snake',
         label: 'snake_case',
-        run: () => setOutputValue(toSnakeCase(inputValue)),
+        run: () => {
+          setOutputValue(toSnakeCase(inputValue))
+          setInputToneWithTimeout('success')
+        },
       },
       {
         id: 'kebab',
         label: 'kebab-case',
-        run: () => setOutputValue(toKebabCase(inputValue)),
+        run: () => {
+          setOutputValue(toKebabCase(inputValue))
+          setInputToneWithTimeout('success')
+        },
       },
     ],
     [inputValue],
@@ -145,11 +196,13 @@ function App() {
         run: () => {
           try {
             JSON.parse(inputValue)
-            setNoticeWithTimeout('Valid JSON.')
+            notify('Valid JSON.', 'success')
+            setInputToneWithTimeout('success')
           } catch (error) {
             const message =
               error instanceof Error ? error.message : 'Invalid JSON.'
-            setNoticeWithTimeout(`Invalid JSON: ${message}`)
+            notify(`Invalid JSON: ${message}`, 'error')
+            setInputToneWithTimeout('error')
           }
         },
       },
@@ -160,11 +213,13 @@ function App() {
           try {
             const parsed = JSON.parse(inputValue)
             setOutputValue(JSON.stringify(parsed, null, 2))
-            setNoticeWithTimeout('Pretty-printed JSON.')
+            notify('Pretty-printed JSON.', 'success')
+            setInputToneWithTimeout('success')
           } catch (error) {
             const message =
               error instanceof Error ? error.message : 'Invalid JSON.'
-            setNoticeWithTimeout(`Invalid JSON: ${message}`)
+            notify(`Invalid JSON: ${message}`, 'error')
+            setInputToneWithTimeout('error')
           }
         },
       },
@@ -175,11 +230,13 @@ function App() {
           try {
             const parsed = JSON.parse(inputValue)
             setOutputValue(JSON.stringify(parsed))
-            setNoticeWithTimeout('Minified JSON.')
+            notify('Minified JSON.', 'success')
+            setInputToneWithTimeout('success')
           } catch (error) {
             const message =
               error instanceof Error ? error.message : 'Invalid JSON.'
-            setNoticeWithTimeout(`Invalid JSON: ${message}`)
+            notify(`Invalid JSON: ${message}`, 'error')
+            setInputToneWithTimeout('error')
           }
         },
       },
@@ -195,11 +252,13 @@ function App() {
               2,
             )};`
             setOutputValue(formatted)
-            setNoticeWithTimeout('Converted JSON to JS object literal.')
+            notify('Converted JSON to JS object literal.', 'success')
+            setInputToneWithTimeout('success')
           } catch (error) {
             const message =
               error instanceof Error ? error.message : 'Invalid JSON.'
-            setNoticeWithTimeout(`Invalid JSON: ${message}`)
+            notify(`Invalid JSON: ${message}`, 'error')
+            setInputToneWithTimeout('error')
           }
         },
       },
@@ -210,11 +269,13 @@ function App() {
           try {
             const parsed = parseJsObjectInput(inputValue)
             setOutputValue(JSON.stringify(parsed, null, 2))
-            setNoticeWithTimeout('Converted JS object to JSON.')
+            notify('Converted JS object to JSON.', 'success')
+            setInputToneWithTimeout('success')
           } catch (error) {
             const message =
               error instanceof Error ? error.message : 'Invalid JS object.'
-            setNoticeWithTimeout(`Invalid JS object: ${message}`)
+            notify(`Invalid JS object: ${message}`, 'error')
+            setInputToneWithTimeout('error')
           }
         },
       },
@@ -223,8 +284,10 @@ function App() {
   )
 
   return (
-    <div className="app-shell">
-      <aside className="sidebar">
+    <>
+      <Toaster />
+      <div className="app-shell">
+        <aside className="sidebar">
         <div className="sidebar-header">
           <p className="eyebrow">Utilities</p>
           <h2>Function Library</h2>
@@ -234,16 +297,23 @@ function App() {
         </div>
         <div className="sidebar-section">
           <p className="section-title">String</p>
+          {isJsonInput && (
+            <p className="text-xs text-slate-400">
+              JSON detected. String tools are disabled.
+            </p>
+          )}
           <div className="button-stack">
             {stringActions.map((action) => (
-              <button
+              <Button
                 key={action.id}
-                className="action-button"
+                className="w-full justify-start"
                 onClick={action.run}
                 type="button"
+                variant="secondary"
+                disabled={isJsonInput}
               >
                 {action.label}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -251,44 +321,55 @@ function App() {
           <p className="section-title">JSON</p>
           <div className="button-stack">
             {jsonActions.map((action) => (
-              <button
+              <Button
                 key={action.id}
-                className="action-button secondary"
+                className="w-full justify-start"
                 onClick={action.run}
                 type="button"
+                variant="outline"
               >
                 {action.label}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
       </aside>
 
-      <main className="main-panel">
+        <main className="main-panel">
         <header className="hero">
           <h1>Simple Utility Functions</h1>
           <p>
             What i want to build is a simple util function. It must be easy to
             use.
           </p>
-          <div className="notice">{notice}</div>
         </header>
 
         <section className="field-block">
           <div className="field-header">
             <h3>Input</h3>
-            <button
-              className="ghost-button"
+            <Button
+              variant="ghost"
+              size="sm"
               type="button"
               onClick={() => handleCopy(inputValue, setInputCopyStatus)}
             >
               {inputCopyStatus}
-            </button>
+            </Button>
           </div>
-          <textarea
-            className="text-area"
+          <Textarea
+            className={[
+              'min-h-[180px] font-mono text-sm transition-colors',
+              inputTone === 'success'
+                ? 'border-emerald-300 focus-visible:ring-emerald-300'
+                : inputTone === 'error'
+                  ? 'border-red-300 focus-visible:ring-red-300'
+                  : '',
+            ].join(' ')}
             value={inputValue}
-            onChange={(event) => setInputValue(event.target.value)}
+            onChange={(event) => {
+              setInputValue(event.target.value)
+              setInputTone(null)
+            }}
             placeholder="Paste text, JSON, or a JS object here."
           />
         </section>
@@ -296,23 +377,25 @@ function App() {
         <section className="field-block">
           <div className="field-header">
             <h3>Output</h3>
-            <button
-              className="ghost-button"
+            <Button
+              variant="ghost"
+              size="sm"
               type="button"
               onClick={() => handleCopy(outputValue, setOutputCopyStatus)}
             >
               {outputCopyStatus}
-            </button>
+            </Button>
           </div>
-          <textarea
-            className="text-area output"
+          <Textarea
+            className="min-h-[180px] font-mono text-sm bg-white"
             value={outputValue}
             onChange={(event) => setOutputValue(event.target.value)}
             placeholder="Results will appear here."
           />
         </section>
-      </main>
-    </div>
+        </main>
+      </div>
+    </>
   )
 }
 
