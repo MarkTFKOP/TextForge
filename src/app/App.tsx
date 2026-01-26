@@ -102,7 +102,7 @@ function App() {
         main={
           <>
             <header className="hero">
-              <h1>Function Utility</h1>
+              <h1>Utility Functions</h1>
               <pre>{'Button Driven Functional Utilities For Developers'}</pre>
             </header>
             <InputEditor
