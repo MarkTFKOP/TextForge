@@ -4,6 +4,8 @@ TextForge is a lightweight, frontend-only utility for transforming text and work
 
 It is designed for fast, predictable transformations with minimal cognitive overhead: paste input, click an action, copy output.
 
+**Live site:** https://textforge.justmarkphilip.com
+
 ---
 
 ## Features

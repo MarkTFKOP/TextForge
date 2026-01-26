@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import './App.css'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -73,9 +73,45 @@ const parseJsObjectInput = (value: string) => {
   }
 }
 
+const findUnsupportedJsonValue = (
+  value: unknown,
+  seen: WeakSet<object> = new WeakSet(),
+): string | null => {
+  if (
+    value === undefined ||
+    typeof value === 'function' ||
+    typeof value === 'symbol' ||
+    typeof value === 'bigint'
+  ) {
+    return 'JSON cannot serialize functions, undefined, symbols, or BigInt.'
+  }
+
+  if (value && typeof value === 'object') {
+    if (seen.has(value)) {
+      return 'Circular references cannot be converted to JSON.'
+    }
+    seen.add(value)
+
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        const issue = findUnsupportedJsonValue(item, seen)
+        if (issue) return issue
+      }
+      return null
+    }
+
+    for (const item of Object.values(value as Record<string, unknown>)) {
+      const issue = findUnsupportedJsonValue(item, seen)
+      if (issue) return issue
+    }
+  }
+
+  return null
+}
+
 function App() {
   const [inputValue, setInputValue] = useState(
-    'What i want to build is a simple util function',
+    'Button-driven helpers for fast text transforms.',
   )
   const [outputValue, setOutputValue] = useState('')
   const [inputTone, setInputTone] = useState<'success' | 'error' | null>(null)
@@ -111,26 +147,33 @@ function App() {
   const handleCopy = async (
     value: string,
     setLabel: (label: string) => void,
+    options: { autoReset?: boolean } = { autoReset: true },
   ) => {
     try {
       await navigator.clipboard.writeText(value)
       setLabel('Copied')
-      window.setTimeout(() => setLabel('Copy'), 1500)
+      if (options.autoReset) {
+        window.setTimeout(() => setLabel('Copy'), 1500)
+      }
     } catch (error) {
       notify('Copy failed. Please try again.', 'error')
     }
   }
+
+  useEffect(() => {
+    setOutputCopyStatus('Copy')
+  }, [outputValue])
 
   const setInputToneWithTimeout = (tone: 'success' | 'error') => {
     setInputTone(tone)
     window.setTimeout(() => setInputTone(null), 2000)
   }
 
-  const stringActions: Action[] = useMemo(
+  const caseActions: Action[] = useMemo(
     () => [
       {
         id: 'upper',
-        label: 'UPPERCASE',
+        label: 'Upper',
         run: () => {
           setOutputValue(inputValue.toUpperCase())
           setInputToneWithTimeout('success')
@@ -138,7 +181,7 @@ function App() {
       },
       {
         id: 'lower',
-        label: 'lowercase',
+        label: 'Lower',
         run: () => {
           setOutputValue(inputValue.toLowerCase())
           setInputToneWithTimeout('success')
@@ -146,7 +189,7 @@ function App() {
       },
       {
         id: 'title',
-        label: 'Title Case',
+        label: 'Title',
         run: () => {
           setOutputValue(toTitleCase(inputValue))
           setInputToneWithTimeout('success')
@@ -154,7 +197,7 @@ function App() {
       },
       {
         id: 'camel',
-        label: 'camelCase',
+        label: 'Camel',
         run: () => {
           setOutputValue(toCamelCase(inputValue))
           setInputToneWithTimeout('success')
@@ -162,7 +205,7 @@ function App() {
       },
       {
         id: 'pascal',
-        label: 'PascalCase',
+        label: 'Pascal',
         run: () => {
           setOutputValue(toPascalCase(inputValue))
           setInputToneWithTimeout('success')
@@ -170,7 +213,7 @@ function App() {
       },
       {
         id: 'snake',
-        label: 'snake_case',
+        label: 'Snake',
         run: () => {
           setOutputValue(toSnakeCase(inputValue))
           setInputToneWithTimeout('success')
@@ -178,9 +221,52 @@ function App() {
       },
       {
         id: 'kebab',
-        label: 'kebab-case',
+        label: 'Kebab',
         run: () => {
           setOutputValue(toKebabCase(inputValue))
+          setInputToneWithTimeout('success')
+        },
+      },
+    ],
+    [inputValue],
+  )
+
+  const stringUtilityActions: Action[] = useMemo(
+    () => [
+      {
+        id: 'trim',
+        label: 'Trim',
+        run: () => {
+          setOutputValue(inputValue.trim())
+          setInputToneWithTimeout('success')
+        },
+      },
+      {
+        id: 'collapse-spaces',
+        label: 'Collapse Spaces',
+        run: () => {
+          setOutputValue(inputValue.replace(/\s+/g, ' ').trim())
+          setInputToneWithTimeout('success')
+        },
+      },
+      {
+        id: 'trim-lines',
+        label: 'Trim Lines',
+        run: () => {
+          setOutputValue(
+            inputValue
+              .split('\n')
+              .map((line) => line.trim())
+              .join('\n'),
+          )
+          setInputToneWithTimeout('success')
+        },
+      },
+      {
+        id: 'reverse-text',
+        label: 'Reverse',
+        run: () => {
+          setOutputValue(inputValue.split('').reverse().join(''))
           setInputToneWithTimeout('success')
         },
       },
@@ -268,6 +354,12 @@ function App() {
         run: () => {
           try {
             const parsed = parseJsObjectInput(inputValue)
+            const unsupported = findUnsupportedJsonValue(parsed)
+            if (unsupported) {
+              notify(unsupported, 'error')
+              setInputToneWithTimeout('error')
+              return
+            }
             setOutputValue(JSON.stringify(parsed, null, 2))
             notify('Converted JS object to JSON.', 'success')
             setInputToneWithTimeout('success')
@@ -290,20 +382,37 @@ function App() {
         <aside className="sidebar">
         <div className="sidebar-header">
           <p className="eyebrow">Utilities</p>
-          <h2>Function Library</h2>
+          <h2>Utility Library</h2>
           <p className="subtitle">
-            Button-driven helpers for fast text transforms.
+            Paste, click, copy. Fast text and JSON utilities.
           </p>
         </div>
         <div className="sidebar-section">
-          <p className="section-title">String</p>
+          <p className="section-title">Case</p>
           {isJsonInput && (
             <p className="text-xs text-slate-400">
               JSON detected. String tools are disabled.
             </p>
           )}
-          <div className="button-stack">
-            {stringActions.map((action) => (
+          <div className="grid grid-cols-2 gap-2">
+            {caseActions.map((action) => (
+              <Button
+                key={action.id}
+                className="w-full justify-start"
+                onClick={action.run}
+                type="button"
+                variant="secondary"
+                disabled={isJsonInput}
+              >
+                {action.label}
+              </Button>
+            ))}
+          </div>
+        </div>
+        <div className="sidebar-section">
+          <p className="section-title">String</p>
+          <div className="grid grid-cols-2 gap-2">
+            {stringUtilityActions.map((action) => (
               <Button
                 key={action.id}
                 className="w-full justify-start"
@@ -337,11 +446,8 @@ function App() {
 
         <main className="main-panel">
         <header className="hero">
-          <h1>Simple Utility Functions</h1>
-          <p>
-            What i want to build is a simple util function. It must be easy to
-            use.
-          </p>
+          <h1>Function Utility</h1>
+          <pre>{"Button Driven Functional Utilities For Developers"}</pre>
         </header>
 
         <section className="field-block">
@@ -372,6 +478,10 @@ function App() {
             }}
             placeholder="Paste text, JSON, or a JS object here."
           />
+          <div className="flex items-center justify-end gap-4 text-xs text-muted-foreground">
+            <span>Length: {inputValue.length}</span>
+            <span>Chars: {inputValue.length}</span>
+          </div>
         </section>
 
         <section className="field-block">
@@ -381,7 +491,11 @@ function App() {
               variant="ghost"
               size="sm"
               type="button"
-              onClick={() => handleCopy(outputValue, setOutputCopyStatus)}
+              onClick={() =>
+                handleCopy(outputValue, setOutputCopyStatus, {
+                  autoReset: false,
+                })
+              }
             >
               {outputCopyStatus}
             </Button>
@@ -392,6 +506,10 @@ function App() {
             onChange={(event) => setOutputValue(event.target.value)}
             placeholder="Results will appear here."
           />
+          <div className="flex items-center justify-end gap-4 text-xs text-muted-foreground">
+            <span>Length: {outputValue.length}</span>
+            <span>Chars: {outputValue.length}</span>
+          </div>
         </section>
         </main>
       </div>
