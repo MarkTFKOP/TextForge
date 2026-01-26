@@ -10,6 +10,7 @@ type InputEditorProps = {
   tone: 'success' | 'error' | null
   copyLabel: string
   onCopy: () => void
+  onClear: () => void
   onChange: (nextValue: string) => void
   stats: LengthStats
   autoFocus?: boolean
@@ -20,12 +21,18 @@ export const InputEditor = ({
   tone,
   copyLabel,
   onCopy,
+  onClear,
   onChange,
   stats,
   autoFocus = false,
 }: InputEditorProps) => (
   <section className="field-block">
-    <FieldHeader title="Input" copyLabel={copyLabel} onCopy={onCopy} />
+    <FieldHeader
+      title="Input"
+      copyLabel={copyLabel}
+      onCopy={onCopy}
+      onClear={onClear}
+    />
     <Textarea
       className={[
         'min-h-[180px] font-mono text-sm transition-colors',

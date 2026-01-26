@@ -9,6 +9,7 @@ type OutputEditorProps = {
   value: string
   copyLabel: string
   onCopy: () => void
+  onClear: () => void
   onChange: (nextValue: string) => void
   stats: LengthStats
 }
@@ -17,11 +18,17 @@ export const OutputEditor = ({
   value,
   copyLabel,
   onCopy,
+  onClear,
   onChange,
   stats,
 }: OutputEditorProps) => (
   <section className="field-block">
-    <FieldHeader title="Output" copyLabel={copyLabel} onCopy={onCopy} />
+    <FieldHeader
+      title="Output"
+      copyLabel={copyLabel}
+      onCopy={onCopy}
+      onClear={onClear}
+    />
     <Textarea
       className="min-h-[180px] font-mono text-sm bg-white"
       value={value}

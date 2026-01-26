@@ -110,6 +110,11 @@ function App() {
               tone={tone}
               copyLabel={inputCopyLabel}
               onCopy={copyInput}
+              onClear={() => {
+                setInputValue('')
+                setOutputValue('')
+                reset()
+              }}
               onChange={(nextValue) => {
                 setInputValue(nextValue)
                 reset()
@@ -121,6 +126,7 @@ function App() {
               value={outputValue}
               copyLabel={outputCopyLabel}
               onCopy={copyOutput}
+              onClear={() => setOutputValue('')}
               onChange={setOutputValue}
               stats={outputStats}
             />
