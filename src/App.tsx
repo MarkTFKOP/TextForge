@@ -121,9 +121,10 @@ function App() {
   const isJsonInput = useMemo(() => {
     const trimmed = inputValue.trim()
     if (!trimmed) return false
+    if (trimmed[0] !== '{' && trimmed[0] !== '[') return false
     try {
-      JSON.parse(trimmed)
-      return true
+      const parsed = JSON.parse(trimmed)
+      return typeof parsed === 'object' && parsed !== null
     } catch (error) {
       return false
     }
