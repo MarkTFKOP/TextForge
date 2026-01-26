@@ -12,6 +12,7 @@ type InputEditorProps = {
   onCopy: () => void
   onChange: (nextValue: string) => void
   stats: LengthStats
+  autoFocus?: boolean
 }
 
 export const InputEditor = ({
@@ -21,6 +22,7 @@ export const InputEditor = ({
   onCopy,
   onChange,
   stats,
+  autoFocus = false,
 }: InputEditorProps) => (
   <section className="field-block">
     <FieldHeader title="Input" copyLabel={copyLabel} onCopy={onCopy} />
@@ -34,6 +36,7 @@ export const InputEditor = ({
             : '',
       ].join(' ')}
       value={value}
+      autoFocus={autoFocus}
       onChange={(event) => onChange(event.target.value)}
       placeholder="Paste text, JSON, or a JS object here."
     />

@@ -4,23 +4,33 @@ type SidebarResizeOptions = {
   minWidth: number
   maxWidthRatio: number
   handleClassName: string
+  storageKey?: string
 }
 
 export const useSidebarResize = ({
   minWidth,
   maxWidthRatio,
   handleClassName,
+  storageKey,
 }: SidebarResizeOptions) => {
   const sidebarRef = useRef<HTMLDivElement | null>(null)
-  const [width, setWidth] = useState(minWidth)
+  const [width, setWidth] = useState(() => {
+    if (!storageKey) return minWidth
+    const stored = window.localStorage.getItem(storageKey)
+    const parsed = stored ? Number.parseInt(stored, 10) : NaN
+    return Number.isFinite(parsed) ? Math.max(parsed, minWidth) : minWidth
+  })
 
   const handleMouseMove = useCallback(
     (event: MouseEvent) => {
       const maxWidth = Math.floor(window.innerWidth * maxWidthRatio)
       const nextWidth = Math.min(Math.max(event.clientX, minWidth), maxWidth)
       setWidth(nextWidth)
+      if (storageKey) {
+        window.localStorage.setItem(storageKey, String(nextWidth))
+      }
     },
-    [maxWidthRatio, minWidth],
+    [maxWidthRatio, minWidth, storageKey],
   )
 
   const handleMouseUp = useCallback(() => {

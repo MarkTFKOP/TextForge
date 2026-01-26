@@ -54,6 +54,7 @@ function App() {
     minWidth: 320,
     maxWidthRatio: 0.45,
     handleClassName: 'sidebar-resize-handle',
+    storageKey: 'textforge.sidebarWidth',
   })
 
   const caseActions = useMemo(() => buildCaseActions(), [])
@@ -114,6 +115,7 @@ function App() {
                 reset()
               }}
               stats={inputStats}
+              autoFocus
             />
             <OutputEditor
               value={outputValue}
