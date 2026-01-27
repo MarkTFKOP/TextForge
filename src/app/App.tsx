@@ -4,6 +4,7 @@ import '@/app/App.css'
 
 import { AppProviders } from '@/app/providers/AppProviders'
 import { AppShell } from '@/app/layout/AppShell'
+import { FullscreenEditorModal } from '@/components/editor/FullscreenEditorModal'
 import { InputEditor } from '@/components/editor/InputEditor'
 import { OutputEditor } from '@/components/editor/OutputEditor'
 import { Sidebar } from '@/components/sidebar/Sidebar'
@@ -39,6 +40,9 @@ function App() {
     'Button-driven helpers for fast text transforms.',
   )
   const [outputValue, setOutputValue] = useState('')
+  const [fullscreenTarget, setFullscreenTarget] = useState<
+    'input' | 'output' | null
+  >(null)
 
   const { tone, trigger, reset } = useToneFeedback()
   const { label: inputCopyLabel, copy: copyInput } = useCopy(inputValue, {
@@ -82,6 +86,9 @@ function App() {
     arrayLength: parseJsonArrayLength(outputValue),
   }
 
+  const isInputFullscreen = fullscreenTarget === 'input'
+  const isOutputFullscreen = fullscreenTarget === 'output'
+
   return (
     <AppProviders>
       <AppShell
@@ -115,6 +122,7 @@ function App() {
                 setOutputValue('')
                 reset()
               }}
+              onFullscreen={() => setFullscreenTarget('input')}
               onChange={(nextValue) => {
                 setInputValue(nextValue)
                 reset()
@@ -127,12 +135,43 @@ function App() {
               copyLabel={outputCopyLabel}
               onCopy={copyOutput}
               onClear={() => setOutputValue('')}
+              onFullscreen={() => setFullscreenTarget('output')}
               onChange={setOutputValue}
               stats={outputStats}
             />
           </>
         }
       />
+      {isInputFullscreen && (
+        <FullscreenEditorModal
+          title="Utility Functions - Input"
+          value={inputValue}
+          tone={tone}
+          copyLabel={inputCopyLabel}
+          onCopy={copyInput}
+          onClear={() => {
+            setInputValue('')
+            setOutputValue('')
+            reset()
+          }}
+          onClose={() => setFullscreenTarget(null)}
+          onChange={(nextValue) => {
+            setInputValue(nextValue)
+            reset()
+          }}
+        />
+      )}
+      {isOutputFullscreen && (
+        <FullscreenEditorModal
+          title="Utility Functions - Output"
+          value={outputValue}
+          copyLabel={outputCopyLabel}
+          onCopy={copyOutput}
+          onClear={() => setOutputValue('')}
+          onClose={() => setFullscreenTarget(null)}
+          onChange={setOutputValue}
+        />
+      )}
     </AppProviders>
   )
 }
