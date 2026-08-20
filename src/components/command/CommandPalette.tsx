@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import type { Action, ActionGroup } from '@/types/action'
 
@@ -13,22 +13,34 @@ export const CommandPalette = ({
 }: CommandPaletteProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const [query, setQuery] = useState('')
+  const [selectedIndex, setSelectedIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement | null>(null)
+
+  const closePalette = useCallback(() => {
+    setIsOpen(false)
+    setQuery('')
+    setSelectedIndex(0)
+  }, [])
+
+  const openPalette = useCallback(() => {
+    setIsOpen(true)
+    setSelectedIndex(0)
+  }, [])
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault()
-        setIsOpen(true)
+        openPalette()
       }
       if (event.key === 'Escape') {
-        setIsOpen(false)
+        closePalette()
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [])
+  }, [closePalette, openPalette])
 
   useEffect(() => {
     if (isOpen) inputRef.current?.focus()
@@ -41,7 +53,7 @@ export const CommandPalette = ({
         group.actions.map((action) => ({
           action,
           groupTitle: group.title,
-          searchable: `${group.title} ${action.label}`.toLowerCase(),
+          searchable: `${group.title} ${action.label} ${action.id}`.toLowerCase(),
         })),
       )
       .filter((item) => !normalizedQuery || item.searchable.includes(normalizedQuery))
@@ -49,50 +61,86 @@ export const CommandPalette = ({
 
   if (!isOpen) {
     return (
-      <button className="command-trigger" type="button" onClick={() => setIsOpen(true)}>
+      <button className="command-trigger" type="button" onClick={openPalette}>
         <span>Search tools</span>
         <kbd>⌘K</kbd>
       </button>
     )
   }
 
-  const firstAction = visibleActions[0]?.action
+  const activeIndex =
+    visibleActions.length === 0
+      ? 0
+      : Math.min(selectedIndex, visibleActions.length - 1)
+  const selectedAction = visibleActions[activeIndex]?.action
   const runAction = (action: Action) => {
     onAction(action)
-    setIsOpen(false)
-    setQuery('')
+    closePalette()
   }
 
   return (
-    <div className="command-overlay" role="dialog" aria-modal="true">
+    <div
+      className="command-overlay"
+      role="dialog"
+      aria-modal="true"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) closePalette()
+      }}
+    >
       <form
         className="command-panel"
         onSubmit={(event) => {
           event.preventDefault()
-          if (!firstAction) return
-          runAction(firstAction)
+          if (!selectedAction) return
+          runAction(selectedAction)
         }}
       >
         <input
           ref={inputRef}
+          aria-activedescendant={selectedAction ? `command-${selectedAction.id}` : undefined}
           className="command-input"
           value={query}
-          onChange={(event) => setQuery(event.target.value)}
+          onChange={(event) => {
+            setQuery(event.target.value)
+            setSelectedIndex(0)
+          }}
           onKeyDown={(event) => {
-            if (event.key !== 'Enter' || !firstAction) return
+            if (event.key === 'ArrowDown') {
+              event.preventDefault()
+              if (visibleActions.length === 0) return
+              setSelectedIndex((index) => (index + 1) % visibleActions.length)
+              return
+            }
+            if (event.key === 'ArrowUp') {
+              event.preventDefault()
+              if (visibleActions.length === 0) return
+              setSelectedIndex(
+                (index) => (index - 1 + visibleActions.length) % visibleActions.length,
+              )
+              return
+            }
+            if (event.key === 'Escape') {
+              event.preventDefault()
+              closePalette()
+              return
+            }
+            if (event.key !== 'Enter' || !selectedAction) return
             event.preventDefault()
-            runAction(firstAction)
+            runAction(selectedAction)
           }}
           placeholder="Type a tool name..."
         />
-        <ul className="command-results">
+        <ul className="command-results" role="listbox">
           {visibleActions.map((item, index) => (
             <li key={item.action.id}>
               <button
+                id={`command-${item.action.id}`}
+                aria-selected={index === activeIndex}
                 className={[
                   'command-result',
-                  index === 0 ? 'command-result-active' : '',
+                  index === activeIndex ? 'command-result-active' : '',
                 ].join(' ')}
+                role="option"
                 type="button"
                 onClick={() => runAction(item.action)}
               >
@@ -102,6 +150,9 @@ export const CommandPalette = ({
             </li>
           ))}
         </ul>
+        {visibleActions.length === 0 ? (
+          <p className="command-empty">No tools found.</p>
+        ) : null}
       </form>
     </div>
   )

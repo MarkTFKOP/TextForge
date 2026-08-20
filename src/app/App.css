@@ -13,7 +13,7 @@
   border-right: 1px solid #d1d5db;
   background: #eeeeef;
   color: #374151;
-  padding: 16px 12px;
+  padding: 18px 14px;
   scrollbar-width: thin;
 }
 
@@ -44,15 +44,15 @@
 }
 
 .sidebar-header {
-  margin-bottom: 18px;
+  margin-bottom: 20px;
   padding: 0 4px;
 }
 
 .eyebrow {
   margin: 0 0 3px;
   color: #111827;
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: 0.76rem;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -60,26 +60,28 @@
 .subtitle {
   margin: 0;
   color: #6b7280;
-  font-size: 0.78rem;
+  font-size: 0.84rem;
+  line-height: 1.45;
 }
 
 .utility-search-row {
   display: flex;
   gap: 6px;
-  margin-top: 10px;
+  margin-top: 12px;
 }
 
 .utility-search {
   min-width: 0;
   flex: 1;
-  height: 28px;
+  height: 32px;
   border: 1px solid #d1d5db;
   border-radius: 5px;
   background: #ffffff;
   color: #111827;
   font: inherit;
-  font-size: 0.76rem;
-  padding: 0 8px;
+  font-size: 0.86rem;
+  line-height: 1.3;
+  padding: 0 10px;
 }
 
 .utility-search::placeholder {
@@ -93,8 +95,8 @@
 
 .utility-filter {
   display: inline-flex;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
@@ -142,9 +144,9 @@
   color: #374151;
   cursor: pointer;
   font: inherit;
-  font-size: 0.74rem;
-  line-height: 1.2;
-  padding: 5px 6px;
+  font-size: 0.84rem;
+  line-height: 1.3;
+  padding: 7px 8px;
   text-align: left;
 }
 
@@ -164,12 +166,12 @@
 
 .sidebar-groups {
   display: grid;
-  gap: 14px;
+  gap: 16px;
 }
 
 .sidebar-group {
   display: grid;
-  gap: 5px;
+  gap: 6px;
 }
 
 .sidebar-group-active .section-title {
@@ -180,8 +182,8 @@
   margin: 0;
   padding: 0 4px;
   color: #6b7280;
-  font-size: 0.68rem;
-  font-weight: 600;
+  font-size: 0.72rem;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -194,14 +196,15 @@
 .sidebar-action {
   width: 100%;
   border: 0;
-  border-radius: 5px;
+  border-radius: 7px;
   background: transparent;
   color: #374151;
   cursor: pointer;
   font: inherit;
-  font-size: 0.78rem;
-  line-height: 1.2;
-  padding: 6px 7px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.35;
+  padding: 9px 10px;
   text-align: left;
 }
 
@@ -216,16 +219,16 @@
   margin: 0;
   padding: 0 4px;
   color: #6b7280;
-  font-size: 0.78rem;
+  font-size: 0.86rem;
 }
 
 .main-panel {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   overflow-y: auto;
-  padding: 16px;
+  padding: 18px;
 }
 
 .main-header {
@@ -238,14 +241,16 @@
 .main-header h1 {
   margin: 0;
   color: #111827;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.15;
 }
 
 .main-header p {
   margin: 2px 0 0;
   color: #6b7280;
-  font-size: 0.78rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
 }
 
 .command-trigger {
@@ -258,8 +263,9 @@
   color: #4b5563;
   cursor: pointer;
   font: inherit;
-  font-size: 0.78rem;
-  padding: 6px 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 7px 10px;
 }
 
 .command-trigger kbd {
@@ -267,7 +273,7 @@
   border-radius: 4px;
   background: #f3f4f6;
   color: #6b7280;
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   padding: 1px 4px;
 }
 
@@ -298,8 +304,9 @@
   border-bottom: 1px solid #e5e7eb;
   color: #111827;
   font: inherit;
-  font-size: 0.86rem;
-  padding: 10px 12px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  padding: 12px 14px;
 }
 
 .command-input:focus {
@@ -324,14 +331,16 @@
   color: #374151;
   cursor: pointer;
   font: inherit;
-  font-size: 0.8rem;
-  padding: 7px 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.35;
+  padding: 9px 10px;
   text-align: left;
 }
 
 .command-result small {
   color: #6b7280;
-  font-size: 0.68rem;
+  font-size: 0.74rem;
 }
 
 .command-result:hover,
@@ -340,14 +349,21 @@
   color: #111827;
 }
 
+.command-empty {
+  margin: 0;
+  padding: 10px 12px 12px;
+  color: #6b7280;
+  font-size: 0.86rem;
+}
+
 .field-block {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   border: 1px solid #d9dce1;
-  border-radius: 7px;
+  border-radius: 8px;
   background: #ffffff;
-  padding: 10px;
+  padding: 14px;
 }
 
 .field-header {
@@ -361,12 +377,19 @@
 .fullscreen-header h3 {
   margin: 0;
   color: #111827;
-  font-size: 0.86rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.25;
 }
 
 .editor-textarea {
   position: relative;
+}
+
+.field-block textarea,
+.fullscreen-panel textarea {
+  font-size: 0.92rem;
+  line-height: 1.55;
 }
 
 .fullscreen-trigger {
@@ -413,9 +436,9 @@
   width: 100%;
   height: 100%;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   background: #ffffff;
-  padding: 14px;
+  padding: 16px;
 }
 
 .fullscreen-header {

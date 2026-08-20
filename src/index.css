@@ -56,8 +56,9 @@ body {
   @apply bg-background text-foreground;
   margin: 0;
   min-height: 100vh;
-  font-size: 14px;
+  font-size: 15px;
   font-family: 'Poppins', system-ui, sans-serif;
+  line-height: 1.5;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

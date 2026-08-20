@@ -16,6 +16,9 @@ const sidebarGroups = (container: HTMLElement) =>
     (title) => title.textContent,
   )
 
+const activeCommandLabel = (container: HTMLElement) =>
+  container.querySelector('.command-result-active span')?.textContent
+
 describe('App', () => {
   it('opens Cmd+K command field', () => {
     render(<App />)
@@ -50,6 +53,34 @@ describe('App', () => {
         2,
       ),
     )
+  })
+
+  it('navigates Cmd+K results with arrow keys and runs the selected action', () => {
+    const { container } = render(<App />)
+    fireEvent.change(inputEditor(), { target: { value: ' hello   world ' } })
+    fireEvent.keyDown(window, { key: 'k', metaKey: true })
+
+    const commandInput = screen.getByPlaceholderText('Type a tool name...')
+    expect(activeCommandLabel(container)).toBe('Trim')
+
+    fireEvent.keyDown(commandInput, { key: 'ArrowDown' })
+    expect(activeCommandLabel(container)).toBe('Collapse Spaces')
+
+    fireEvent.keyDown(commandInput, { key: 'Enter' })
+    expect(outputEditor()).toHaveValue('hello world')
+  })
+
+  it('shows empty Cmd+K state and clears query after Escape', () => {
+    render(<App />)
+    fireEvent.keyDown(window, { key: 'k', metaKey: true })
+
+    const commandInput = screen.getByPlaceholderText('Type a tool name...')
+    fireEvent.change(commandInput, { target: { value: 'zzzz-no-tool' } })
+    expect(screen.getByText('No tools found.')).toBeInTheDocument()
+
+    fireEvent.keyDown(commandInput, { key: 'Escape' })
+    fireEvent.keyDown(window, { key: 'k', metaKey: true })
+    expect(screen.getByPlaceholderText('Type a tool name...')).toHaveValue('')
   })
 
   it('updates detected input label', () => {
