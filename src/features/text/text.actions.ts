@@ -69,8 +69,7 @@ export const buildStringUtilityActions = (): Action[] => [
   },
   {
     id: 'reverse-text',
-    label: 'Reverse',
+    label: 'Reverse Text',
     execute: ({ input }) => success(input.split('').reverse().join('')),
   },
 ]
-

@@ -38,7 +38,7 @@ export const InputEditor = ({
     <div className="editor-textarea">
       <Textarea
         className={[
-          'min-h-[200px] font-mono text-sm transition-colors',
+          'min-h-[200px] text-sm transition-colors',
           tone === 'success'
             ? 'border-emerald-300 focus-visible:ring-emerald-300'
             : tone === 'error'
@@ -48,7 +48,7 @@ export const InputEditor = ({
         value={value}
         autoFocus={autoFocus}
         onChange={(event) => onChange(event.target.value)}
-        placeholder="Paste text, JSON, or a JS object here."
+        placeholder="Paste JSON, URL, cookie header, SQL, regex, or text."
       />
       <button
         className="fullscreen-trigger"
@@ -64,4 +64,3 @@ export const InputEditor = ({
     <EditorFooter stats={stats} />
   </section>
 )
-

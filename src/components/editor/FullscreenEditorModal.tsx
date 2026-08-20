@@ -47,7 +47,7 @@ export const FullscreenEditorModal = ({
       </div>
       <Textarea
         className={[
-          'flex-1 min-h-0 font-mono text-sm',
+          'flex-1 min-h-0 text-sm',
           tone === 'success'
             ? 'border-emerald-300 focus-visible:ring-emerald-300'
             : tone === 'error'
@@ -61,4 +61,3 @@ export const FullscreenEditorModal = ({
     </div>
   </div>
 )
-

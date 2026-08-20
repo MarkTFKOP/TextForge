@@ -1,91 +1,163 @@
-import { forwardRef } from 'react'
+import { forwardRef, useMemo, useState } from 'react'
 
-import { Button } from '@/components/ui/button'
-import type { Action } from '@/types/action'
+import type { Action, ActionGroup, ActionGroupId } from '@/types/action'
 
 import { SidebarResizeHandle } from './SidebarResizeHandle'
-import { SidebarSection } from './SidebarSection'
 
 type SidebarProps = {
-  caseActions: Action[]
-  stringActions: Action[]
-  sqlActions: Action[]
-  arrayActions: Action[]
-  jsonActions: Action[]
-  isJson: boolean
-  isArray: boolean
+  actionGroups: ActionGroup[]
+  detectedGroupId: ActionGroupId | null
   onAction: (action: Action) => void
 }
 
-const renderActions = (
-  actions: Action[],
+type SidebarFilterId = 'all' | ActionGroupId
+
+const normalizeSearch = (value: string) => value.trim().toLowerCase()
+
+const filterActionGroups = (
+  actionGroups: ActionGroup[],
+  search: string,
+  filterId: SidebarFilterId,
+) => {
+  const normalizedSearch = normalizeSearch(search)
+
+  return actionGroups
+    .filter((group) => filterId === 'all' || group.id === filterId)
+    .map((group) => {
+      if (!normalizedSearch) return group
+
+      const groupMatches = group.title.toLowerCase().includes(normalizedSearch)
+      const actions = groupMatches
+        ? group.actions
+        : group.actions.filter((action) =>
+            `${action.label} ${action.id}`.toLowerCase().includes(normalizedSearch),
+          )
+
+      return { ...group, actions }
+    })
+    .filter((group) => group.actions.length > 0)
+}
+
+const renderActionGroup = (
+  group: ActionGroup,
+  detectedGroupId: ActionGroupId | null,
   onAction: (action: Action) => void,
-  disabled: boolean,
-  variant: 'secondary' | 'outline' = 'secondary',
 ) => (
-  <div className="button-wrap">
-    {actions.map((action) => (
-      <Button
-        key={action.id}
-        className="sidebar-button"
-        onClick={() => onAction(action)}
-        type="button"
-        variant={variant}
-        disabled={disabled}
-      >
-        {action.label}
-      </Button>
-    ))}
-  </div>
+  <li
+    className={[
+      'sidebar-group',
+      group.id === detectedGroupId ? 'sidebar-group-active' : '',
+    ].join(' ')}
+    key={group.id}
+  >
+    <p className="section-title">{group.title}</p>
+    <ul className="sidebar-action-list">
+      {group.actions.map((action) => (
+        <li key={action.id}>
+          <button
+            className="sidebar-action"
+            onClick={() => onAction(action)}
+            type="button"
+          >
+            {action.label}
+          </button>
+        </li>
+      ))}
+    </ul>
+  </li>
 )
 
 export const Sidebar = forwardRef<HTMLDivElement, SidebarProps>(
-  (
-    {
-      caseActions,
-      stringActions,
-      sqlActions,
-      arrayActions,
-      jsonActions,
-      isJson,
-      isArray,
-      onAction,
-    },
-    ref,
-  ) => (
-    <aside className="sidebar" ref={ref}>
-      <div className="sidebar-header">
-        <p className="eyebrow">Utilities</p>
-        <p className="subtitle">Paste, click, copy. Fast text and JSON utilities.</p>
-      </div>
+  ({ actionGroups, detectedGroupId, onAction }, ref) => {
+    const [search, setSearch] = useState('')
+    const [filterId, setFilterId] = useState<SidebarFilterId>('all')
+    const [isFilterOpen, setIsFilterOpen] = useState(false)
 
-      <SidebarSection
-        title="Case"
-        hint={isJson ? 'JSON detected. String tools are disabled.' : undefined}
-      >
-        {renderActions(caseActions, onAction, isJson)}
-      </SidebarSection>
+    const visibleActionGroups = useMemo(
+      () => filterActionGroups(actionGroups, search, filterId),
+      [actionGroups, filterId, search],
+    )
 
-      <SidebarSection title="String">
-        {renderActions(stringActions, onAction, isJson)}
-      </SidebarSection>
+    return (
+      <aside className="sidebar" ref={ref}>
+        <div className="sidebar-header">
+          <p className="eyebrow">Utilities</p>
+          <p className="subtitle">Paste, detect, run.</p>
+          <div className="utility-search-row">
+            <input
+              aria-label="Search tools"
+              className="utility-search"
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search tools"
+              type="search"
+              value={search}
+            />
+            <button
+              aria-label="Filter tools"
+              aria-expanded={isFilterOpen}
+              className={[
+                'utility-filter',
+                isFilterOpen || filterId !== 'all' ? 'utility-filter-active' : '',
+              ].join(' ')}
+              onClick={() => setIsFilterOpen((isOpen) => !isOpen)}
+              type="button"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 6h16M7 12h10M10 18h4" />
+              </svg>
+            </button>
+          </div>
+          {isFilterOpen ? (
+            <ul className="utility-filter-menu">
+              <li>
+                <button
+                  className={[
+                    'utility-filter-option',
+                    filterId === 'all' ? 'utility-filter-option-active' : '',
+                  ].join(' ')}
+                  onClick={() => {
+                    setFilterId('all')
+                    setIsFilterOpen(false)
+                  }}
+                  type="button"
+                >
+                  All tools
+                </button>
+              </li>
+              {actionGroups.map((group) => (
+                <li key={group.id}>
+                  <button
+                    className={[
+                      'utility-filter-option',
+                      filterId === group.id ? 'utility-filter-option-active' : '',
+                    ].join(' ')}
+                    onClick={() => {
+                      setFilterId(group.id)
+                      setIsFilterOpen(false)
+                    }}
+                    type="button"
+                  >
+                    {group.title}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
 
-      <SidebarSection title="SQL">
-        {renderActions(sqlActions, onAction, false)}
-      </SidebarSection>
+        <ul className="sidebar-groups">
+          {visibleActionGroups.map((group) =>
+            renderActionGroup(group, detectedGroupId, onAction),
+          )}
+        </ul>
+        {visibleActionGroups.length === 0 ? (
+          <p className="sidebar-empty">No tools match.</p>
+        ) : null}
 
-    <SidebarSection title="JSON">
-      {renderActions(jsonActions, onAction, !isJson)}
-    </SidebarSection>
-
-    <SidebarSection title="Array">
-      {renderActions(arrayActions, onAction, !isArray)}
-    </SidebarSection>
-
-      <SidebarResizeHandle />
-    </aside>
-  ),
+        <SidebarResizeHandle />
+      </aside>
+    )
+  },
 )
 
 Sidebar.displayName = 'Sidebar'
-

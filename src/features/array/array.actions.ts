@@ -13,7 +13,7 @@ const success = (message: string, output?: string) =>
 export const buildArrayActions = (): Action[] => [
   {
     id: 'array-reverse',
-    label: 'Reverse',
+    label: 'Reverse Array',
     execute: ({ input }) => {
       const parsed = parseJsonArrayInput(input)
       if (!parsed.ok) return err(parsed.error)
@@ -64,4 +64,3 @@ export const buildArrayActions = (): Action[] => [
     },
   },
 ]
-

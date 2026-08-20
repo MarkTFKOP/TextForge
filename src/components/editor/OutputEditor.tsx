@@ -33,10 +33,10 @@ export const OutputEditor = ({
     />
     <div className="editor-textarea">
       <Textarea
-        className="min-h-[200px] font-mono text-sm bg-white"
+        className="min-h-[200px] text-sm bg-white"
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        placeholder="Results will appear here."
+        placeholder="Output appears here."
       />
       <button
         className="fullscreen-trigger"
@@ -52,4 +52,3 @@ export const OutputEditor = ({
     <EditorFooter stats={stats} />
   </section>
 )
-

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 
 type AppShellProps = {
   sidebarWidth: number
@@ -7,9 +7,11 @@ type AppShellProps = {
 }
 
 export const AppShell = ({ sidebarWidth, sidebar, main }: AppShellProps) => (
-  <div className="app-shell" style={{ gridTemplateColumns: `${sidebarWidth}px 1fr` }}>
+  <div
+    className="app-shell"
+    style={{ '--sidebar-width': `${sidebarWidth}px` } as CSSProperties}
+  >
     {sidebar}
     <main className="main-panel">{main}</main>
   </div>
 )
-

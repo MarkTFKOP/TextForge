@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import { writeClipboard } from '@/lib/clipboard'
 import { notify } from '@/lib/notifications'
@@ -12,8 +12,9 @@ export const useCopy = (
   value: string,
   options: UseCopyOptions = { autoReset: true, resetOnValueChange: false },
 ) => {
-  const { autoReset = true, resetOnValueChange = false } = options
-  const [label, setLabel] = useState('Copy')
+  const { autoReset = true } = options
+  const [copiedValue, setCopiedValue] = useState<string | null>(null)
+  const label = copiedValue === value ? 'Copied' : 'Copy'
 
   const copy = useCallback(async () => {
     const result = await writeClipboard(value)
@@ -21,17 +22,11 @@ export const useCopy = (
       notify('Copy failed. Please try again.', 'error')
       return
     }
-    setLabel('Copied')
+    setCopiedValue(value)
     if (autoReset) {
-      window.setTimeout(() => setLabel('Copy'), 1500)
+      window.setTimeout(() => setCopiedValue(null), 1500)
     }
   }, [autoReset, value])
 
-  useEffect(() => {
-    if (!resetOnValueChange) return
-    setLabel('Copy')
-  }, [resetOnValueChange, value])
-
   return { label, copy }
 }
-

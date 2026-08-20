@@ -1,0 +1,115 @@
+import { fireEvent, render, screen } from '@testing-library/react'
+import { describe, expect, it } from 'vitest'
+
+import App from './App'
+
+const inputEditor = () =>
+  screen.getByPlaceholderText('Paste JSON, URL, cookie header, SQL, regex, or text.')
+
+const outputEditor = () => screen.getByPlaceholderText('Output appears here.')
+
+const detectedLabel = (container: HTMLElement) =>
+  container.querySelector('.main-header p')?.textContent
+
+const sidebarGroups = (container: HTMLElement) =>
+  Array.from(container.querySelectorAll('.section-title')).map(
+    (title) => title.textContent,
+  )
+
+describe('App', () => {
+  it('opens Cmd+K command field', () => {
+    render(<App />)
+    fireEvent.keyDown(window, { key: 'k', metaKey: true })
+    expect(screen.getByPlaceholderText('Type a tool name...')).toBeInTheDocument()
+  })
+
+  it('runs the first Cmd+K result with Enter', () => {
+    render(<App />)
+    fireEvent.change(inputEditor(), { target: { value: 'https://example.com?a=1' } })
+    fireEvent.keyDown(window, { key: 'k', metaKey: true })
+
+    const commandInput = screen.getByPlaceholderText('Type a tool name...')
+    fireEvent.change(commandInput, { target: { value: 'parse url' } })
+    fireEvent.keyDown(commandInput, { key: 'Enter' })
+
+    expect(outputEditor()).toHaveValue(
+      JSON.stringify(
+        {
+          href: 'https://example.com/?a=1',
+          protocol: 'https',
+          origin: 'https://example.com',
+          host: 'example.com',
+          hostname: 'example.com',
+          port: '',
+          pathname: '/',
+          search: '?a=1',
+          hash: '',
+          query: { a: '1' },
+        },
+        null,
+        2,
+      ),
+    )
+  })
+
+  it('updates detected input label', () => {
+    const { container } = render(<App />)
+    fireEvent.change(inputEditor(), { target: { value: '{"a":1}' } })
+    expect(detectedLabel(container)).toBe('JSON object')
+
+    fireEvent.change(inputEditor(), { target: { value: 'https://example.com?a=1' } })
+    expect(detectedLabel(container)).toBe('URL')
+
+    fireEvent.change(inputEditor(), { target: { value: 'sid=abc; theme=dark' } })
+    expect(detectedLabel(container)).toBe('Cookie header')
+  })
+
+  it('renders dense grouped sidebar actions', () => {
+    const { container } = render(<App />)
+    expect(container.querySelectorAll('.sidebar-action-list').length).toBeGreaterThan(4)
+    expect(screen.getByRole('button', { name: 'Parse URL' })).toBeInTheDocument()
+  })
+
+  it('searches sidebar tools', () => {
+    render(<App />)
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Search tools' }), {
+      target: { value: 'cookie' },
+    })
+
+    expect(screen.getByRole('button', { name: 'Cookie → JSON' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'JSON → Cookie' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Parse URL' })).not.toBeInTheDocument()
+  })
+
+  it('filters sidebar tools by group', () => {
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: 'Filter tools' }))
+    fireEvent.click(screen.getByRole('button', { name: 'URL' }))
+
+    expect(screen.getByRole('button', { name: 'Parse URL' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Cookie → JSON' })).not.toBeInTheDocument()
+  })
+
+  it('orders sidebar groups by detected input', () => {
+    const { container } = render(<App />)
+
+    fireEvent.change(inputEditor(), { target: { value: '{"a":1}' } })
+    expect(sidebarGroups(container).slice(0, 3)).toEqual(['JSON', 'Diff', 'URL'])
+
+    fireEvent.change(inputEditor(), { target: { value: 'https://example.com?a=1' } })
+    expect(sidebarGroups(container).slice(0, 3)).toEqual(['URL', 'JSON', 'Cookie'])
+
+    fireEvent.change(inputEditor(), { target: { value: 'sid=abc; theme=dark' } })
+    expect(sidebarGroups(container).slice(0, 3)).toEqual(['Cookie', 'JSON', 'URL'])
+
+    fireEvent.change(inputEditor(), { target: { value: 'plain text' } })
+    expect(sidebarGroups(container).slice(0, 3)).toEqual(['String', 'Case', 'Regex'])
+  })
+
+  it('runs paste to action to output flow', () => {
+    render(<App />)
+    fireEvent.change(inputEditor(), { target: { value: '{"b":1,"a":2}' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Sort Keys' }))
+    expect(outputEditor()).toHaveValue('{\n  "a": 2,\n  "b": 1\n}')
+  })
+})
