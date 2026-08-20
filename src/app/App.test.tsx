@@ -35,24 +35,19 @@ describe('App', () => {
     fireEvent.change(commandInput, { target: { value: 'parse url' } })
     fireEvent.keyDown(commandInput, { key: 'Enter' })
 
-    expect(outputEditor()).toHaveValue(
-      JSON.stringify(
-        {
-          href: 'https://example.com/?a=1',
-          protocol: 'https',
-          origin: 'https://example.com',
-          host: 'example.com',
-          hostname: 'example.com',
-          port: '',
-          pathname: '/',
-          search: '?a=1',
-          hash: '',
-          query: { a: '1' },
-        },
-        null,
-        2,
-      ),
-    )
+    expect(screen.getByText('URL parts')).toBeInTheDocument()
+    expect(screen.getByRole('row', { name: /Hostname example.com/i })).toBeInTheDocument()
+    expect(screen.queryByPlaceholderText('Output appears here.')).not.toBeInTheDocument()
+  })
+
+  it('renders cookie parser output as a table', () => {
+    render(<App />)
+    fireEvent.change(inputEditor(), { target: { value: 'sid=abc; theme=dark' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Cookie → JSON' }))
+
+    expect(screen.getByText('Cookie values')).toBeInTheDocument()
+    expect(screen.getByRole('row', { name: /sid abc/i })).toBeInTheDocument()
+    expect(screen.getByRole('row', { name: /theme dark/i })).toBeInTheDocument()
   })
 
   it('navigates Cmd+K results with arrow keys and runs the selected action', () => {

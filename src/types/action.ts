@@ -5,8 +5,21 @@ export type ActionContext = {
   input: string
 }
 
+export type TableOutputRow = {
+  id: string
+  label: string
+  value: string
+}
+
+export type ActionOutputView = {
+  type: 'table'
+  title: string
+  rows: TableOutputRow[]
+}
+
 export type ActionEffect = {
   output?: string
+  view?: ActionOutputView | null
   notice?: Notice
   tone?: 'success' | 'error'
 }

@@ -16,16 +16,18 @@ import { useCopy } from '@/hooks/useCopy'
 import { useSidebarResize } from '@/hooks/useSidebarResize'
 import { useToneFeedback } from '@/hooks/useToneFeedback'
 import { notify } from '@/lib/notifications'
-import type { Action, ActionEffect } from '@/types/action'
+import type { Action, ActionEffect, ActionOutputView } from '@/types/action'
 
 const applyEffect = (
   effect: ActionEffect,
   setOutputValue: (value: string) => void,
+  setOutputView: (view: ActionOutputView | null) => void,
   triggerTone: (tone: 'success' | 'error') => void,
 ) => {
   if (effect.output !== undefined) {
     setOutputValue(effect.output)
   }
+  setOutputView(effect.view ?? null)
   if (effect.notice) {
     notify(effect.notice.message, effect.notice.tone)
   }
@@ -39,6 +41,7 @@ function App() {
     'Button-driven helpers for fast text transforms.',
   )
   const [outputValue, setOutputValue] = useState('')
+  const [outputView, setOutputView] = useState<ActionOutputView | null>(null)
   const [fullscreenTarget, setFullscreenTarget] = useState<
     'input' | 'output' | null
   >(null)
@@ -73,7 +76,7 @@ function App() {
       trigger('error')
       return
     }
-    applyEffect(result.value, setOutputValue, trigger)
+    applyEffect(result.value, setOutputValue, setOutputView, trigger)
   }
 
   const inputStats = {
@@ -120,6 +123,7 @@ function App() {
               onClear={() => {
                 setInputValue('')
                 setOutputValue('')
+                setOutputView(null)
                 reset()
               }}
               onFullscreen={() => setFullscreenTarget('input')}
@@ -132,9 +136,13 @@ function App() {
             />
             <OutputEditor
               value={outputValue}
+              view={outputView}
               copyLabel={outputCopyLabel}
               onCopy={copyOutput}
-              onClear={() => setOutputValue('')}
+              onClear={() => {
+                setOutputValue('')
+                setOutputView(null)
+              }}
               onFullscreen={() => setFullscreenTarget('output')}
               onChange={setOutputValue}
               stats={outputStats}
@@ -152,6 +160,7 @@ function App() {
           onClear={() => {
             setInputValue('')
             setOutputValue('')
+            setOutputView(null)
             reset()
           }}
           onClose={() => setFullscreenTarget(null)}
@@ -167,7 +176,10 @@ function App() {
           value={outputValue}
           copyLabel={outputCopyLabel}
           onCopy={copyOutput}
-          onClear={() => setOutputValue('')}
+          onClear={() => {
+            setOutputValue('')
+            setOutputView(null)
+          }}
           onClose={() => setFullscreenTarget(null)}
           onChange={setOutputValue}
         />

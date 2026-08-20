@@ -1,4 +1,4 @@
-import type { Action } from '@/types/action'
+import type { Action, ActionOutputView } from '@/types/action'
 import { err, ok } from '@/types/result'
 
 import { parseJsonValue } from '@/features/json/json.parsers'
@@ -12,6 +12,16 @@ const success = (message: string, output: string) =>
     tone: 'success' as const,
   })
 
+const cookieTableView = (value: Record<string, string>): ActionOutputView => ({
+  type: 'table',
+  title: 'Cookie values',
+  rows: Object.entries(value).map(([key, item]) => ({
+    id: key,
+    label: key,
+    value: item,
+  })),
+})
+
 export const buildCookieActions = (): Action[] => [
   {
     id: 'cookie-to-json',
@@ -20,7 +30,12 @@ export const buildCookieActions = (): Action[] => [
       try {
         const parsed = parseCookieHeader(input)
         if (!parsed.ok) return err(parsed.error)
-        return success('Parsed cookie header.', JSON.stringify(parsed.value, null, 2))
+        return ok({
+          output: JSON.stringify(parsed.value, null, 2),
+          view: cookieTableView(parsed.value),
+          notice: { message: 'Parsed cookie header.', tone: 'success' as const },
+          tone: 'success' as const,
+        })
       } catch (error) {
         return err(error instanceof Error ? error : new Error('Could not parse cookie header.'))
       }

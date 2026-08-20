@@ -37,6 +37,10 @@ describe('URL actions', () => {
     expect(result.ok).toBe(true)
     if (!result.ok) return
     expect(JSON.parse(result.value.output ?? '').query.a).toEqual(['1', '2'])
+    expect(result.value.view?.type).toBe('table')
+    expect(result.value.view?.rows.find((row) => row.id === 'hostname')?.value).toBe(
+      'example.com',
+    )
   })
 
   it('rejects invalid URLs', () => {
@@ -51,6 +55,12 @@ describe('cookie actions', () => {
     expect(result.ok).toBe(true)
     if (!result.ok) return
     expect(JSON.parse(result.value.output ?? '')).toEqual({ name: 'Mark P', mode: 'dark' })
+    expect(result.value.view?.type).toBe('table')
+    expect(result.value.view?.rows).toContainEqual({
+      id: 'name',
+      label: 'name',
+      value: 'Mark P',
+    })
   })
 
   it('converts JSON to cookie header', () => {
